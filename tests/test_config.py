@@ -242,6 +242,31 @@ class TestMergedConfig(unittest.TestCase):
             "exclude should prefer CLI over file"
         )
 
+    def test_merged_config_dry_run_default(self):
+        cfg = MergedConfig({}, argparse.Namespace(dry_run=None))
+        self.assertFalse(
+            cfg.dry_run(),
+            "dry_run default should be False"
+        )
+
+    def test_merged_config_dry_run_from_file(self):
+        file = {"dry-run": True}
+        cli = argparse.Namespace(dry_run=None)
+        cfg = MergedConfig(file, cli)
+        self.assertTrue(
+            cfg.dry_run(),
+            "dry_run should come from file"
+        )
+
+    def test_merged_config_dry_run_from_cli(self):
+        file = {"dry-run": False}
+        cli = argparse.Namespace(dry_run=True)
+        cfg = MergedConfig(file, cli)
+        self.assertTrue(
+            cfg.dry_run(),
+            "dry_run should prefer CLI over file"
+        )
+
 
 if __name__ == "__main__":
     unittest.main()

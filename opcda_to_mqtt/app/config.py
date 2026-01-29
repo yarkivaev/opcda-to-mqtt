@@ -209,3 +209,12 @@ class MergedConfig:
             List of glob patterns to exclude
         """
         return self.get("exclude", [])
+
+    def dry_run(self):
+        """
+        Check if dry-run mode is enabled.
+
+        Returns:
+            True if dry-run mode is enabled
+        """
+        return self.get("dry_run", False)

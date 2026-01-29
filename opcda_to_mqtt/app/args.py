@@ -92,6 +92,12 @@ class ArgumentParser:
             default=None,
             help="Number of worker threads"
         )
+        self._parser.add_argument(
+            "--dry-run",
+            action="store_true",
+            default=False,
+            help="Print to stdout instead of MQTT"
+        )
 
     def parse(self, argv):
         """

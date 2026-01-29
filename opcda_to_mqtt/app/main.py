@@ -58,7 +58,7 @@ def main():
     if not cfg.da_progid():
         logger.error("Missing required: da-progid")
         sys.exit(1)
-    if not cfg.mqtt_host():
+    if not cfg.dry_run() and not cfg.mqtt_host():
         logger.error("Missing required: mqtt-host")
         sys.exit(1)
     if not cfg.mqtt_topic():
@@ -67,12 +67,19 @@ def main():
     try:
         from opcda_to_mqtt.da.openopc import OpenOpcSource
         from opcda_to_mqtt.sync.openopc_worker import OpenOpcWorker
-        from opcda_to_mqtt.mqtt.paho import PahoBroker
+        if cfg.dry_run():
+            from opcda_to_mqtt.mqtt.console import ConsoleBroker
+        else:
+            from opcda_to_mqtt.mqtt.paho import PahoBroker
     except ImportError as e:
         logger.error("Missing dependency: %s" % e)
         sys.exit(1)
     source = OpenOpcSource(cfg.da_progid(), cfg.da_host())
-    broker = PahoBroker(cfg.mqtt_host(), cfg.mqtt_port())
+    if cfg.dry_run():
+        broker = ConsoleBroker()
+        logger.info("Dry-run mode: printing to stdout")
+    else:
+        broker = PahoBroker(cfg.mqtt_host(), cfg.mqtt_port())
     queue = TaskQueue()
     timer = TimerThread()
     workers = [

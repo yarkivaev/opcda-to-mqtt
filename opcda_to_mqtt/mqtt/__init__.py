@@ -8,5 +8,6 @@ from __future__ import print_function
 
 from opcda_to_mqtt.mqtt.broker import MqttBroker
 from opcda_to_mqtt.mqtt.fake import FakeMqttBroker
+from opcda_to_mqtt.mqtt.console import ConsoleBroker
 
-__all__ = ['MqttBroker', 'FakeMqttBroker']
+__all__ = ['MqttBroker', 'FakeMqttBroker', 'ConsoleBroker']

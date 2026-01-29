@@ -8,5 +8,6 @@
     "tags": [],
     "interval": 500,
     "workers": 50,
-    "exclude": ["*.Device exchange"]
+    "exclude": ["*.Device exchange"],
+    "dry-run": false
 }
