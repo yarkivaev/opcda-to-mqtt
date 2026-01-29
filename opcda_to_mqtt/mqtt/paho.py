@@ -12,6 +12,8 @@ from __future__ import print_function
 
 import logging
 
+import paho.mqtt.client as mqtt
+
 from opcda_to_mqtt.mqtt.broker import (
     MqttBroker, Connected, Published, Disconnected
 )
@@ -52,7 +54,6 @@ class PahoBroker(MqttBroker):
             Either[Problem, Connected]
         """
         try:
-            import paho.mqtt.client as mqtt
             _log.info("MQTT: connecting to %s:%d", self._host, self._port)
             self._client = mqtt.Client(client_id="opcda-mqtt-bridge")
             self._client.on_connect = self._on_connect
