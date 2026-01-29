@@ -10,10 +10,14 @@ Example:
 """
 from __future__ import print_function
 
+import logging
+
 from opcda_to_mqtt.mqtt.broker import (
     MqttBroker, Connected, Published, Disconnected
 )
 from opcda_to_mqtt.result.either import Right, Left, Problem
+
+_log = logging.getLogger("opcda_mqtt")
 
 
 class PahoBroker(MqttBroker):
@@ -49,15 +53,38 @@ class PahoBroker(MqttBroker):
         """
         try:
             import paho.mqtt.client as mqtt
-            self._client = mqtt.Client()
+            _log.info("MQTT: connecting to %s:%d", self._host, self._port)
+            self._client = mqtt.Client(client_id="opcda-mqtt-bridge")
+            self._client.on_connect = self._on_connect
+            self._client.on_disconnect = self._on_disconnect
             self._client.connect(self._host, self._port)
             self._client.loop_start()
+            _log.debug("MQTT: loop started")
             return Right(Connected())
         except Exception as e:
+            _log.error("MQTT: connection failed: %s", e)
             return Left(Problem(
                 "MQTT connection failed",
                 {"host": self._host, "port": str(self._port), "error": str(e)}
             ))
+
+    def _on_connect(self, client, userdata, flags, rc):
+        """
+        Callback when connected to broker.
+        """
+        if rc == 0:
+            _log.info("MQTT: connected successfully")
+        else:
+            _log.error("MQTT: connection failed with code %d", rc)
+
+    def _on_disconnect(self, client, userdata, rc):
+        """
+        Callback when disconnected from broker.
+        """
+        if rc == 0:
+            _log.info("MQTT: disconnected cleanly")
+        else:
+            _log.warning("MQTT: unexpected disconnect, code %d", rc)
 
     def publish(self, topic, message):
         """
@@ -72,10 +99,14 @@ class PahoBroker(MqttBroker):
         """
         try:
             if self._client is None:
+                _log.error("MQTT: publish failed - not connected")
                 return Left(Problem("Not connected", {}))
-            self._client.publish(topic, message)
+            _log.debug("MQTT: publishing to %s", topic)
+            result = self._client.publish(topic, message)
+            _log.debug("MQTT: publish result rc=%d, mid=%d", result.rc, result.mid)
             return Right(Published())
         except Exception as e:
+            _log.error("MQTT: publish failed: %s", e)
             return Left(Problem(
                 "MQTT publish failed",
                 {"topic": topic, "error": str(e)}
@@ -90,11 +121,13 @@ class PahoBroker(MqttBroker):
         """
         try:
             if self._client is not None:
+                _log.info("MQTT: disconnecting")
                 self._client.loop_stop()
                 self._client.disconnect()
                 self._client = None
             return Right(Disconnected())
         except Exception as e:
+            _log.error("MQTT: disconnect failed: %s", e)
             return Left(Problem(
                 "MQTT disconnect failed",
                 {"error": str(e)}
