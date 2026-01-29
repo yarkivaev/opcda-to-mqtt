@@ -1,0 +1,7 @@
+awgs_root@ff--dg06 MINGW32 /c/Documents and Settings/yarkivaev/sokol-new/opcda-to-mqtt (main)
+$ python -m opcda_to_mqtt.app.main
+2026-01-29 18:35:58,250 INFO Starting OPC-DA to MQTT bridge
+2026-01-29 18:35:58,608 INFO Excluded 0 tags by pattern
+2026-01-29 18:35:58,608 INFO Monitoring 1 tags:
+2026-01-29 18:35:58,608 INFO   - COM1.ТМ 5104_ИЧТ4[4].Channel 6.COM1.ТМ 5104_ИЧТ4[4].Channel 6
+
