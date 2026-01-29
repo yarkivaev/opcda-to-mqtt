@@ -70,7 +70,7 @@ def main():
         if cfg.dry_run():
             from opcda_to_mqtt.mqtt.console import ConsoleBroker
         else:
-            from opcda_to_mqtt.mqtt.paho import PahoBroker
+            from opcda_to_mqtt.mqtt.paho_broker import PahoBroker
     except ImportError as e:
         logger.error("Missing dependency: %s" % e)
         sys.exit(1)
