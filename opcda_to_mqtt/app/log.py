@@ -31,7 +31,7 @@ class LogConfig:
         Sets default format and level.
         """
         self._format = "%(asctime)s %(levelname)s %(message)s"
-        self._level = logging.INFO
+        self._level = logging.DEBUG
 
     def setup(self):
         """
