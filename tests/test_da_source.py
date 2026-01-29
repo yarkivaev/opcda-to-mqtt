@@ -265,6 +265,21 @@ class TestOpenOpcSourceFlatten(unittest.TestCase):
             "Should handle full paths with branches"
         )
 
+    def test_flatten_handles_leaf_returning_itself(self):
+        from opcda_to_mqtt.da.openopc import OpenOpcSource
+        source = OpenOpcSource("progid", "host")
+        client = StubOpcClient({
+            "COM1": ["Device"],
+            "COM1.Device": ["COM1.Device.Channel"],
+            "COM1.Device.Channel": ["COM1.Device.Channel"]
+        })
+        result = source._flatten(client, "COM1")
+        self.assertEqual(
+            result,
+            ["COM1.Device.Channel"],
+            "Should treat leaf returning itself as leaf"
+        )
+
 
 if __name__ == "__main__":
     unittest.main()

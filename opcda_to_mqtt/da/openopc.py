@@ -87,7 +87,7 @@ class OpenOpcSource(DaSource):
             else:
                 full = child
             subchildren = client.list(full)
-            if subchildren:
+            if subchildren and subchildren != [full]:
                 result.extend(self._flatten(client, full))
             else:
                 result.append(full)
