@@ -1,0 +1,33 @@
+$ python scripts/diagnose_leak.py
+Memory Leak Diagnostic
+==================================================
+Taking initial snapshot...
+Initial object count: 3572
+
+Waiting 30 seconds...
+
+Taking second snapshot...
+Middle object count: 3590
+
+Waiting another 30 seconds...
+
+Taking final snapshot...
+Final object count: 3590
+
+==================================================
+GROWTH FROM INITIAL TO MIDDLE (30s):
+==================================================
+  wrapper_descriptor: +8
+    member_descriptor: +4
+      weakref: +2
+        dict: +2
+	  getset_descriptor: +2
+
+	  ==================================================
+	  GROWTH FROM MIDDLE TO FINAL (30s):
+	  ==================================================
+
+	  ==================================================
+	  CONSISTENT GROWTH (appearing in both periods):
+	  ==================================================
+
