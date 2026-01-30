@@ -60,7 +60,6 @@ class PahoBroker(MqttBroker):
             self._client.on_disconnect = self._on_disconnect
             self._client.connect(self._host, self._port)
             self._client.loop_start()
-            _log.debug("MQTT: loop started")
             return Right(Connected())
         except Exception as e:
             _log.error("MQTT: connection failed: %s", e)
@@ -102,9 +101,7 @@ class PahoBroker(MqttBroker):
             if self._client is None:
                 _log.error("MQTT: publish failed - not connected")
                 return Left(Problem("Not connected", {}))
-            _log.debug("MQTT: publishing to %s", topic)
-            result = self._client.publish(topic, message)
-            _log.debug("MQTT: publish result rc=%d, mid=%d", result.rc, result.mid)
+            self._client.publish(topic, message)
             return Right(Published())
         except Exception as e:
             _log.error("MQTT: publish failed: %s", e)

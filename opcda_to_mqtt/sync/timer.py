@@ -12,11 +12,8 @@ Example:
 from __future__ import print_function
 
 import heapq
-import logging
 import threading
 import time
-
-_log = logging.getLogger("opcda_mqtt")
 
 
 class TimerThread:
@@ -52,7 +49,6 @@ class TimerThread:
         """
         Start the timer thread.
         """
-        _log.debug("Timer: starting")
         self._running = True
         self._thread.start()
 
@@ -62,12 +58,10 @@ class TimerThread:
 
         Signals thread to stop and waits for it.
         """
-        _log.debug("Timer: stopping")
         with self._condition:
             self._running = False
             self._condition.notify()
         self._thread.join()
-        _log.debug("Timer: stopped")
 
     def schedule(self, delay, callback):
         """
@@ -77,7 +71,6 @@ class TimerThread:
             delay: Seconds to wait before firing
             callback: Function to call (no arguments)
         """
-        _log.debug("Timer: scheduling callback in %.2f sec", delay)
         fire = time.time() + delay
         with self._condition:
             heapq.heappush(self._heap, (fire, callback))
@@ -89,29 +82,22 @@ class TimerThread:
 
         Waits for callbacks and fires them at their scheduled time.
         """
-        _log.debug("Timer._run: started")
         with self._condition:
             while self._running:
                 if not self._heap:
-                    _log.debug("Timer._run: heap empty, waiting")
                     self._condition.wait()
                     continue
                 fire = self._heap[0][0]
                 now = time.time()
                 if now >= fire:
                     _, callback = heapq.heappop(self._heap)
-                    _log.debug("Timer._run: firing callback")
                     self._condition.release()
                     try:
                         callback()
                     finally:
                         self._condition.acquire()
-                    _log.debug("Timer._run: callback done")
                 else:
-                    wait = fire - now
-                    _log.debug("Timer._run: waiting %.2f sec", wait)
-                    self._condition.wait(wait)
-        _log.debug("Timer._run: finished")
+                    self._condition.wait(fire - now)
 
     def pending(self):
         """

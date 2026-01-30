@@ -106,11 +106,8 @@ def main():
         logger.error("No tags to monitor")
         sys.exit(1)
     logger.info("Monitoring %d tags:" % len(tags))
-    print("text?")
-    print(len(tags))
     for tag in tags:
         logger.info("  - %s" % tag.text())
-    print("interval?")
     interval = Milliseconds(cfg.interval())
     topic = cfg.mqtt_topic()
     running = [True]
