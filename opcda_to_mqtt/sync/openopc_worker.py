@@ -71,12 +71,13 @@ class OpenOpcWorker(Worker):
         client = OpenOPC.client()
         client.connect(self._progid, self._host)
         while True:
+            tag = self._queue.get()
+            if tag is None:
+                break
             try:
-                tag = self._queue.get()
-                if tag is None:
-                    break
                 tag.reading(client).publish()
             except Exception:
+                tag._later_bound()
                 client.close()
                 client = OpenOPC.client()
                 client.connect(self._progid, self._host)
