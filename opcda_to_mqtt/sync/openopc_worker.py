@@ -84,8 +84,8 @@ class OpenOpcWorker(Worker):
         _log.debug("Worker[%d]: connecting to %s@%s", self._id, self._progid, self._host)
         client.connect(self._progid, self._host)
         _log.debug("Worker[%d]: connected, entering loop", self._id)
-        try:
-            while True:
+        while True:
+            try:
                 _log.debug("Worker[%d]: waiting for task", self._id)
                 task = self._queue.get()
                 if task is None:
@@ -94,9 +94,10 @@ class OpenOpcWorker(Worker):
                 _log.debug("Worker[%d]: executing task %s", self._id, task)
                 task.execute(client)
                 _log.debug("Worker[%d]: task done", self._id)
-        finally:
-            _log.debug("Worker[%d]: closing OPC client", self._id)
-            client.close()
+            finally:
+                _log.debug("Worker[%d]: reopen client", self._id)
+                client.close()
+                client = OpenOPC.client()
         _log.debug("Worker[%d]: _run finished", self._id)
 
     def __repr__(self):
