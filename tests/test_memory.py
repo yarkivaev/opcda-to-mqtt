@@ -138,5 +138,74 @@ class TestMemoryLeaks(unittest.TestCase):
         )
 
 
+    def test_object_counts_stable_over_extended_run(self):
+        gc.collect()
+        queue = TaskQueue()
+        timer = TimerThread()
+        broker = FakeMqttBroker()
+        readings = {"Tag": random.randint(1, 100)}
+        worker = FakeWorker(queue, readings)
+        bridge = Bridge(queue, [worker], timer, broker)
+        bridge.start([TagPath("Tag")], Milliseconds(1), "t")
+        time.sleep(1.0)
+        gc.collect()
+        counts_early = {}
+        for obj in gc.get_objects():
+            name = type(obj).__name__
+            counts_early[name] = counts_early.get(name, 0) + 1
+        time.sleep(10.0)
+        gc.collect()
+        counts_late = {}
+        for obj in gc.get_objects():
+            name = type(obj).__name__
+            counts_late[name] = counts_late.get(name, 0) + 1
+        bridge.stop()
+        growth = {}
+        for name in counts_late:
+            diff = counts_late.get(name, 0) - counts_early.get(name, 0)
+            if diff > 10:
+                growth[name] = diff
+        self.assertLess(
+            len(growth),
+            5,
+            "Too many object types growing: %r" % growth
+        )
+
+    def test_memory_growth_not_proportional_to_cycles(self):
+        gc.collect()
+        before_fast = resource.getrusage(resource.RUSAGE_SELF).ru_maxrss
+        queue = TaskQueue()
+        timer = TimerThread()
+        broker = FakeMqttBroker()
+        readings = {"Tag": random.randint(1, 100)}
+        worker = FakeWorker(queue, readings)
+        bridge = Bridge(queue, [worker], timer, broker)
+        bridge.start([TagPath("Tag")], Milliseconds(1), "t")
+        time.sleep(5.0)
+        bridge.stop()
+        gc.collect()
+        after_fast = resource.getrusage(resource.RUSAGE_SELF).ru_maxrss
+        growth_fast = after_fast - before_fast
+        gc.collect()
+        before_slow = resource.getrusage(resource.RUSAGE_SELF).ru_maxrss
+        queue2 = TaskQueue()
+        timer2 = TimerThread()
+        broker2 = FakeMqttBroker()
+        worker2 = FakeWorker(queue2, readings)
+        bridge2 = Bridge(queue2, [worker2], timer2, broker2)
+        bridge2.start([TagPath("Tag")], Milliseconds(100), "t")
+        time.sleep(5.0)
+        bridge2.stop()
+        gc.collect()
+        after_slow = resource.getrusage(resource.RUSAGE_SELF).ru_maxrss
+        growth_slow = after_slow - before_slow
+        ratio = float(growth_fast) / max(float(growth_slow), 1.0)
+        self.assertLess(
+            ratio,
+            10.0,
+            "Memory growth ratio should not be proportional to cycle count"
+        )
+
+
 if __name__ == "__main__":
     unittest.main()
