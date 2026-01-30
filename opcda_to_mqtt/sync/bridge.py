@@ -9,13 +9,10 @@ Example:
 from __future__ import print_function
 
 import json
-import logging
 
 from opcda_to_mqtt.sync.task import ReadTask
 from opcda_to_mqtt.domain.value import TagValue
 from opcda_to_mqtt.domain.quality import OpcQuality
-
-_log = logging.getLogger("opcda_mqtt")
 
 
 class Bridge:
@@ -87,7 +84,6 @@ class Bridge:
         """
         def handle(result):
             value, quality, _ = result
-            _log.info("%s = %s (%s)", tag.text(), value, quality)
             message = json.dumps({
                 "value": TagValue(value).json(),
                 "quality": OpcQuality(quality).text()
